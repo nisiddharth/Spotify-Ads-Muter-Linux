@@ -6,7 +6,7 @@ Mutes and unmutes Spotify within 5 seconds of start and end of Ads.
 
 ### Usage:
 
-To use just run `mute_spotify_timer.sh` either using terminal or Alt + F2 launcher or just add it to list of syatem Startup Applications.
+To use just run `mute_spotify_timer.sh` either using terminal or Alt + F2 launcher or just add it to list of system Startup Applications.
 
 ### Maintenance:
 
