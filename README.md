@@ -1,5 +1,7 @@
 # Spotify Ads muter for Linux
 
+This is purely a bash script.
+
 Uses dbus, applicable for systems using PulseAudio. Only works while using Spotify client (doesn't matter how you install it) and not web browser.
 
 Mutes and unmutes Spotify within 5 seconds of start and end of Ads.
