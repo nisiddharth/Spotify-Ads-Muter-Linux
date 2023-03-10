@@ -62,11 +62,9 @@ fi
 
 # muting...
 if [[ "$2" == "mute" ]]; then
-   pacmd set-sink-input-mute "$current_index" 1 > /dev/null 2>&1
-   # amixer set -D pulse Master toggle -q
+    pacmd set-sink-input-mute "$current_index" 1 > /dev/null 2>&1
 else
-   pacmd set-sink-input-mute "$current_index" 0 > /dev/null 2>&1
-   # amixer set -D pulse Master toggle -q
+    pacmd set-sink-input-mute "$current_index" 0 > /dev/null 2>&1
 fi
 
 exit 0
