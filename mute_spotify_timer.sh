@@ -8,11 +8,11 @@ while true; do
 	
 	if [[ "$name" = *"Advertisement"* || "$name" = *"Spotify"* ]] || [[ $url == *"/ad/"* ]]; then
 		echo "Muting"
-		~/spotify-muter-linux/mute_app.sh spotify mute
+		~/Spotify-Ads-Muter-Linux/mute_app.sh spotify mute
 		sleep 5
 	else
 		echo "Unmuting"
-		~/spotify-muter-linux/mute_app.sh spotify unmute
+		~/Spotify-Ads-Muter-Linux/mute_app.sh spotify unmute
 	fi
 	sleep 1
 done
