@@ -1,70 +1,50 @@
 #!/bin/bash
-# Script to mute an application using PulseAudio, depending solely on
-# process name, constructed as answer on askubuntu.com:.
-# http://askubuntu.com/questions/180612/script-to-mute-an-application
+# Script to respawn or mute an application using PulseAudio
 
-# It works as: mute_application.sh vlc mute OR mute_application.sh vlc unmute
-
+# it works as mute_app.sh <app_name> <action>, such as mute_app.sh spotify mute
 if [ -z "$1" ]; then
-    echo "Please provide me with an application name"
+    echo "Please provide an application name."
     exit 1
 fi
 
 if [ -z "$2" ]; then
-    echo "Please provide me with an action mute/unmute after the application name"
+    echo "Please provide an action: mute, unmute, or respawn."
     exit 1
 fi
 
-if ! [[ "$2" == "mute" || "$2" == "unmute" ]]; then
-    echo "The 2nd argument must be mute/unmute"
+if [[ "$2" != "mute" && "$2" != "unmute" && "$2" != "respawn" ]]; then
+    echo "The action must be mute, unmute, or respawn."
     exit 1
 fi
 
-process_id=$(pidof "$1")
+# Get the process ID associated with the specified application
+process_ids=$(pgrep -d ' ' -x "$1")
 
-if [ $? -ne 0 ]; then
-    echo "There is no such process as "$1""
+if [ -z "$process_ids" ]; then
+    echo "There is no such process matching: '$1'."
     exit 1
 fi
 
-temp=$(mktemp)
+# Loop through each process ID
+for process_id in $process_ids; do
+    # Get the sink input index for the sink with "spotify" in the name
+    sink_input_index=$(pacmd list-sink-inputs | grep -B 20 -P "application.name = \"${1}\"" | grep "index" | awk '{print $2}')
 
-pacmd list-sink-inputs > $temp
-
-inputs_found=0;
-current_index=-1;
-
-while read line; do
-    if [ $inputs_found -eq 0 ]; then
-	    inputs=$(echo -ne "$line" | awk '{print $2}')
-	    if [[ "$inputs" == "to" ]]; then
-		    continue
-	    fi
-	    inputs_found=1
-    else
-	    if [[ "${line:0:6}" == "index:" ]]; then
-		    current_index="${line:7}"
-	    elif [[ "${line:0:25}" == "application.process.id = " ]]; then
-		    if [[ "${line:25}" == "\"$process_id\"" ]]; then
-			    # index found...
-			    break;
-		    fi
-	    fi
+    if [ -z "$sink_input_index" ]; then
+        echo "Could not find sink input index for '$1' (PID: $process_id)."
+        exit 1
     fi
-done < $temp
 
-rm -f $temp
-
-if [ $current_index -eq -1 ]; then
-    echo "Could not find "$1" in the processes that output sound."
-    exit 1
-fi
-
-# muting...
-if [[ "$2" == "mute" ]]; then
-    pacmd set-sink-input-mute "$current_index" 1 > /dev/null 2>&1
-else
-    pacmd set-sink-input-mute "$current_index" 0 > /dev/null 2>&1
-fi
+    # Perform the specified action
+    if [ "$2" == "mute" ]; then
+        pacmd set-sink-input-mute "$sink_input_index" 1 > /dev/null 2>&1
+    elif [ "$2" == "unmute" ]; then
+        pacmd set-sink-input-mute "$sink_input_index" 0 > /dev/null 2>&1
+    elif [ "$2" == "respawn" ]; then
+        kill "$process_id" # kill application
+        while pgrep -x "$1" >/dev/null; do sleep 1; done # wait for application to die
+        "$1" & # start application
+    fi
+done
 
 exit 0
