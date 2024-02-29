@@ -17,29 +17,33 @@ if [[ "$2" != "mute" && "$2" != "unmute" && "$2" != "respawn" ]]; then
     exit 1
 fi
 
-# Get the sink input index for the sink with matching application name
-sink_input_index=$(pacmd list-sink-inputs | grep -B 20 -P "application.name = \"${1}\"" | grep "index" | awk '{print $2}')
+# Get the sink input index for the sink with matching application name, and use grep to find all matching indexes
+sink_input_indexes=$(pacmd list-sink-inputs | grep -B 20 "application.name = \"$1\"" | awk '/index:/{print $2}')
 
-if [ -z "$sink_input_index" ]; then
+if [ -z "$sink_input_indexes" ]; then
     echo "Could not find sink input index for $1."
     exit 1
 fi
 
-# Perform the specified action
-if [ "$2" == "mute" ]; then
-    pacmd set-sink-input-mute "$sink_input_index" 1 > /dev/null 2>&1
-    echo "Muted $1."
-elif [ "$2" == "unmute" ]; then
-    pacmd set-sink-input-mute "$sink_input_index" 0 > /dev/null 2>&1
-    echo "Unmuted $1."
-elif [ "$2" == "respawn" ]; then
-    # Kill the application
-    pkill -x "$1"
-    # Wait for the application to close
-    while pgrep -x "$1" > /dev/null; do sleep 1; done
-    # Restart the application
-    "$1" > /dev/null 2>&1 &
-    echo "Respawned $1."
-fi
+# Perform the specified action on each sink input index
+for sink_input_index in $sink_input_indexes; do
+    if [ "$2" == "mute" ]; then
+        pacmd set-sink-input-mute "$sink_input_index" 1 > /dev/null 2>&1
+        echo "Muted $1 on sink input index $sink_input_index."
+    elif [ "$2" == "unmute" ]; then
+        pacmd set-sink-input-mute "$sink_input_index" 0 > /dev/null 2>&1
+        echo "Unmuted $1 on sink input index $sink_input_index."
+    elif [ "$2" == "respawn" ]; then
+        # Kill the application
+        pkill -x "$1"
+        # Wait for the application to close
+        while pgrep -x "$1" > /dev/null; do sleep 1; done
+        # Restart the application
+        "$1" > /dev/null 2>&1 &
+        echo "Respawned $1."
+        # break out of the loop after respawning the application because this is only needed once
+        break
+    fi
+done
 
 exit 0
