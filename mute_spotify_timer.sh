@@ -10,14 +10,14 @@ while true; do
 	# if song name contains "Advertisement" or "Spotify" or url contains "/ad/"
 	if  [[ "$name" = *"Advertisement"* || "$name" = *"Spotify"* ]] || [[ $url == *"/ad/"* ]]; then
 		echo "Muting"
-		~/Spotify-Ads-Muter-Linux/mute_app.sh spotify mute
+		~/git/Spotify-Ads-Muter-Linux/mute_app.sh spotify mute
 		if [[ $respawn == true ]]; then
 			echo "Respawning"
-			~/Spotify-Ads-Muter-Linux/mute_app.sh spotify respawn
+			~/git/Spotify-Ads-Muter-Linux/mute_app.sh spotify respawn
 		fi
 	else
 		echo "Unmuting"
-		~/Spotify-Ads-Muter-Linux/mute_app.sh spotify unmute
+		~/git/Spotify-Ads-Muter-Linux/mute_app.sh spotify unmute
 	fi
 	sleep 1
 done
