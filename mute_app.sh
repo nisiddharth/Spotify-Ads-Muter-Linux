@@ -19,6 +19,10 @@ fi
 
 # Get the sink input index for the sink with matching application name, and use grep to find all matching indexes
 sink_input_indexes=$(pacmd list-sink-inputs | grep -B 20 "application.name = \"$1\"" | awk '/index:/{print $2}')
+# this second command catches Chromium commercials
+sink_input_indexes_alt=$(pacmd list-sink-inputs | grep -B 27 "application.process.binary = \"$1\"" | awk '/index:/{print $2}')
+# Now combine the sink input indexes from both commands to remove duplicates
+sink_input_indexes=$(echo -e "$sink_input_indexes\n$sink_input_indexes_alt" | sort -n | uniq)
 
 if [ -z "$sink_input_indexes" ]; then
     echo "Could not find sink input index for $1."
